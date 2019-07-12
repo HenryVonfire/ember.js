@@ -1,5 +1,5 @@
 /*globals process */
-var enifed, requireModule, Ember;
+var define, requireModule, Ember;
 
 // Used in @ember/-internals/environment/lib/global.js
 mainContext = this; // eslint-disable-line no-undef
@@ -70,7 +70,7 @@ mainContext = this; // eslint-disable-line no-undef
     var registry = Object.create(null);
     var seen = Object.create(null);
 
-    enifed = function(name, deps, callback) {
+    define = function(name, deps, callback) {
       var value = {};
 
       if (!callback) {
@@ -98,12 +98,12 @@ mainContext = this; // eslint-disable-line no-undef
     requireModule._eak_seen = registry;
 
     Ember.__loader = {
-      define: enifed,
+      define: define,
       require: requireModule,
       registry: registry,
     };
   } else {
-    enifed = Ember.__loader.define;
+    define = Ember.__loader.define;
     requireModule = Ember.__loader.require;
   }
 })();

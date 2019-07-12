@@ -9,6 +9,7 @@ module.exports = function toES5(tree, _options) {
   options.sourceMaps = true;
   options.plugins = [
     injectBabelHelpers,
+    ['@babel/transform-template-literals', { loose: true }],
     ['@babel/transform-literals'],
     ['@babel/transform-arrow-functions'],
     ['@babel/transform-destructuring', { loose: true }],

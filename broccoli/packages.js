@@ -17,6 +17,7 @@ const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const transfromBabelPlugins = require('./transforms/transform-babel-plugins');
+const canaryFeatures = require('./canary-features');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -34,13 +35,11 @@ module.exports.routerES = function _routerES() {
   });
 };
 
-module.exports.jquery = function _jquery() {
-  return new Funnel(findLib('jquery'), {
-    files: ['jquery.js'],
-    destDir: 'jquery',
-    annotation: 'jquery',
+module.exports.loader = () =>
+  new Funnel(findLib('loader.js'), {
+    files: ['loader.js'],
+    annotation: 'loader.js',
   });
-};
 
 module.exports.internalLoader = function _internalLoader() {
   return new Funnel('packages/loader/lib', {
@@ -112,7 +111,9 @@ module.exports.getPackagesES = function getPackagesES() {
     `get-packages-es:package-json`
   );
 
-  mergedFinalOutput = new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true });
+  mergedFinalOutput = canaryFeatures(
+    new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true })
+  );
 
   return debugTree(mergedFinalOutput, `get-packages-es:output`);
 };
@@ -279,25 +280,14 @@ module.exports.emberVersionES = function _emberVersionES() {
   });
 };
 
-module.exports.buildEmberEnvFlagsES = function(flags) {
-  let content = '';
-  for (let key in flags) {
-    content += `\nexport const ${key} = ${flags[key]};`;
-  }
-
-  return new WriteFile('@glimmer/env.js', content, {
-    annotation: '@glimmer/env',
-  });
-};
-
 module.exports.emberLicense = function _emberLicense() {
   let license = new Funnel('generators', {
-    files: ['license.js'],
+    files: ['license.txt'],
     annotation: 'license',
   });
 
   return new StringReplace(license, {
-    files: ['license.js'],
+    files: ['license.txt'],
     patterns: [
       {
         match: VERSION_PLACEHOLDER,
@@ -305,11 +295,5 @@ module.exports.emberLicense = function _emberLicense() {
       },
     ],
     annotation: 'license',
-  });
-};
-
-module.exports.nodeTests = function _nodeTests() {
-  return new Funnel('tests', {
-    include: ['**/*/*.js'],
   });
 };
